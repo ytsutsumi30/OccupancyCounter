@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 簡易な人型アイコン -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,30
+                          m-12,0
+                          a12,12 0 1,0 24,0
+                          a12,12 0 1,0 -24,0 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M34,76
+                          C34,62 44,54 54,54
+                          C64,54 74,62 74,76
+                          L74,82
+                          L34,82 Z" />
+</vector>

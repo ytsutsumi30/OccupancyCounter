@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">滞在人数カウンタ</string>
+    <string name="title_settings">設定</string>
+
+    <string name="label_occupancy">現在の滞在人数</string>
+    <string name="label_raw_count">瞬間値: %1$d</string>
+    <string name="label_server_off">サーバー送信: OFF</string>
+    <string name="label_server_ok">サーバー送信OK: %1$s</string>
+    <string name="label_server_ng">サーバー送信NG: %1$s</string>
+
+    <string name="status_initializing">カメラを初期化中...</string>
+    <string name="status_running">動作中</string>
+    <string name="status_error">エラー: %1$s</string>
+    <string name="msg_camera_required">カメラ権限が必要です。</string>
+
+    <string name="cat_camera">カメラ</string>
+    <string name="cat_server">サーバー連携</string>
+
+    <string name="pref_front_camera_title">フロントカメラを使用</string>
+    <string name="pref_front_camera_summary">OFFの場合は背面カメラを使用します。</string>
+
+    <string name="pref_send_title">サーバーへ送信する</string>
+    <string name="pref_send_summary">ONにすると下記URLに人数をPOSTします。</string>
+
+    <string name="pref_endpoint_title">エンドポイントURL</string>
+    <string name="pref_endpoint_summary">このURLへJSONをPOSTします。</string>
+
+    <string name="pref_device_id_title">デバイスID</string>
+    <string name="pref_device_id_summary">初回起動時に自動生成されます。</string>
+
+    <string name="pref_interval_title">送信間隔(秒)</string>
+    <string name="pref_interval_summary">連続送信を抑制する最小間隔です。</string>
+</resources>
