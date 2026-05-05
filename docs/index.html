@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>会議室管理 - ダッシュボード (GitHub Pages)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== 接続状態バナー ===== -->
+<div id="connBanner" class="conn-banner hidden">
+  <span id="connBannerText">接続確認中...</span>
+  <button onclick="openBackendDialog()">⚙ Backend設定</button>
+</div>
+
+<div class="app">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-jp">会議室管理</div>
+      <div class="brand-en">ROOM MANAGEMENT</div>
+    </div>
+
+    <div class="available-pill">
+      <div class="num" id="availableNum">4</div>
+      <div class="lbl">AVAILABLE</div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item active">▦ ダッシュボード</a>
+      <a class="nav-item">+ 予約</a>
+      <a class="nav-item">≡ 予約一覧</a>
+      <a class="nav-item">~ 分析・レポート</a>
+      <a class="nav-item" onclick="openBackendDialog()">⚙ 設定</a>
+      <a class="nav-item highlight">○ テストモード</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user">
+        <div class="user-avatar">▣</div>
+        <div>
+          <div class="user-name">Public View</div>
+          <div class="user-mail" id="apiBaseLabel">--</div>
+        </div>
+      </div>
+      <button class="signout" onclick="resetState()">状態リセット</button>
+    </div>
+
+    <div class="updated-tag" id="updatedTag">--:-- 更新</div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <h1 class="page-title">ダッシュボード</h1>
+
+    <div class="vacancy-line">
+      現在の空き状況 — <span id="vacancyText">4室空き</span>
+    </div>
+
+    <div class="rooms" id="roomsGrid"></div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">今日の予約タイムライン</div>
+        <div class="panel-meta" id="todayLabel">2026/--/--</div>
+      </div>
+      <div class="timeline">
+        <div class="hour-axis" id="hourAxis"></div>
+        <div class="row">
+          <div class="row-label muted-purple">自分の予定</div><div class="row-bar"></div>
+        </div>
+        <div class="row"><div class="row-label">大会議室</div><div class="row-bar"></div></div>
+        <div class="row"><div class="row-label">中会議室</div><div class="row-bar"></div></div>
+        <div class="row"><div class="row-label">小会議室</div><div class="row-bar"></div></div>
+        <div class="row"><div class="row-label">個別ブース</div><div class="row-bar"></div></div>
+        <div class="legend">
+          <span class="lg lg-large">大会議室</span>
+          <span class="lg lg-medium">中会議室</span>
+          <span class="lg lg-small">小会議室</span>
+          <span class="lg lg-booth">個別ブース</span>
+          <span class="lg lg-ghost">ゴースト</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">人数推移（本日）</div>
+        <div class="legend right">
+          <span class="lg lg-large">大会議室</span>
+          <span class="lg lg-medium">中会議室</span>
+          <span class="lg lg-small">小会議室</span>
+          <span class="lg lg-booth">個別ブース</span>
+        </div>
+      </div>
+      <canvas id="trendChart" height="180"></canvas>
+    </section>
+
+    <section class="panel test-panel">
+      <div class="panel-head">
+        <div class="panel-title">📡 テストモード — Androidアプリからの受信ログ</div>
+      </div>
+      <div class="ingest-spec">
+        <code>
+POST <span id="ingestUrl">/ingest/headcount</span><br>
+{ "device_id": "<b>3F:A8:91:0C:7B:E2</b>", "headcount": <b>5</b>, "confidence": "confirmed" }
+        </code>
+        <div class="device-map" id="deviceMapView"></div>
+      </div>
+      <div class="ingest-log" id="ingestLog"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== Backend設定ダイアログ ===== -->
+<div id="backendDialog" class="dialog hidden">
+  <div class="dialog-card">
+    <h3>Backend URL 設定</h3>
+    <p>
+      ダッシュボードがバックエンドに接続するURLを変更できます。<br>
+      Cloudflare Tunnelが再起動した場合、新しいURLに更新してください。
+    </p>
+    <input type="text" id="apiBaseInput" placeholder="https://xxxxx.trycloudflare.com">
+    <div class="dialog-actions">
+      <button onclick="closeBackendDialog()" class="btn-cancel">キャンセル</button>
+      <button onclick="useDemoMode()" class="btn-demo">デモモード</button>
+      <button onclick="resetToDefault()" class="btn-reset">既定に戻す</button>
+      <button onclick="applyBackend()" class="btn-apply">適用</button>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>
