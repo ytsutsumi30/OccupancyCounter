@@ -105,17 +105,27 @@ OccupancyCounter/
 カウント値が **変化したとき** かつ **送信間隔が経過したとき** にのみ送信されます。
 
 ```http
-POST https://bright-amendments-employer-notebooks.trycloudflare.com/api/occupancy
+POST https://bright-amendments-employer-notebooks.trycloudflare.com/ingest/headcount
 Content-Type: application/json
 
 {
-  "device_id": "android-Pixel_4-1a2b3c4d",
-  "count": 3,
-  "timestamp": "2026-05-03T01:23:45Z"
+  "device_id":  "AA:BB:CC:DD:EE:FF",
+  "headcount":  5,
+  "confidence": "confirmed"
 }
 ```
 
-サーバー側では `device_id` で会議室を識別し、`count == 0` を「無人」、`count >= 1` を「使用中」として会議室予約状態に反映できます。
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `device_id`  | string | 端末識別子。MAC アドレス形式 (`AA:BB:CC:DD:EE:FF`)。初回起動時にUUIDから擬似的に生成され、設定画面で会議室固有の値に書き換え可能 |
+| `headcount`  | int    | スムージング後の現在の滞在人数（直近5フレームの最頻値） |
+| `confidence` | string | `confirmed`: スムージングウィンドウ内で全フレーム同値 → 安定<br>`tentative`: ウォームアップ中 / 検出値変動中 → 参考値 |
+
+サーバー側では `device_id` で会議室を識別し、`headcount == 0` を「無人」、`headcount >= 1` を「使用中」として会議室予約状態に反映できます。`confidence == "tentative"` の場合は参考値として無視するか、複数回連続を待つ運用も可能です。
+
+### 会議室予約システム側「テストモード」での確認
+
+予約システムには「テストモード」画面が用意されており、画像ファイルから人数検出をテストしてDBに反映できます。Androidアプリと同じエンドポイント (`/ingest/headcount`) にPOSTされるため、APKインストール前の動作確認や、`device_id` と会議室名のマッピング登録に利用できます。
 
 > Cloudflare Tunnel の URL (`*.trycloudflare.com`) は再起動で変わるため、URLを変えた場合は **設定画面のエンドポイントURL** を書き換えるだけで対応可能です。
 

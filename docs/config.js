@@ -11,7 +11,7 @@
 
 window.DASHBOARD_CONFIG = {
   // 既存の Cloudflare Tunnel URL (再起動で変わる場合は書き換え)
-  DEFAULT_API_BASE: "https://bright-amendments-employer-notebooks.trycloudflare.com",
+  DEFAULT_API_BASE: "https://supported-eligibility-rogers-warranty.trycloudflare.com",
 
   // ポーリング間隔(ms)
   POLL_INTERVAL_MS: 3000,

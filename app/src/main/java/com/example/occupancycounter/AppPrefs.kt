@@ -1,12 +1,17 @@
 package com.example.occupancycounter
 
 import android.content.Context
-import android.os.Build
 import androidx.preference.PreferenceManager
 import java.util.UUID
 
 /**
  * SharedPreferences のラッパー
+ *
+ * 注意: device_id は会議室予約システム側で「会議室の識別子」として使用されるため、
+ *       初回起動時に MAC アドレス形式 (AA:BB:CC:DD:EE:FF) でランダム生成し、
+ *       ユーザーが設定画面で会議室固有の値に書き換えられるようにする。
+ *       Android 6.0 以降は実 MAC アドレス取得が制限されているため、
+ *       UUID から擬似的な MAC を生成する。
  */
 class AppPrefs(context: Context) {
 
@@ -17,15 +22,22 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_SEND_TO_SERVER, value).apply()
 
     var serverEndpoint: String
-        get() = prefs.getString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT) ?: DEFAULT_ENDPOINT
+        get() {
+            val stored = prefs.getString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT) ?: DEFAULT_ENDPOINT
+            // 古いCloudflare Tunnel URLが保存されていたら新URLに自動移行
+            if (stored == LEGACY_ENDPOINT) {
+                prefs.edit().putString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT).apply()
+                return DEFAULT_ENDPOINT
+            }
+            return stored
+        }
         set(value) = prefs.edit().putString(KEY_SERVER_ENDPOINT, value).apply()
 
     var deviceId: String
         get() {
             val saved = prefs.getString(KEY_DEVICE_ID, null)
             if (saved != null) return saved
-            // 初回起動時にデバイスIDを生成
-            val generated = "android-${Build.MODEL?.replace(" ", "_")}-${UUID.randomUUID().toString().take(8)}"
+            val generated = generatePseudoMac()
             prefs.edit().putString(KEY_DEVICE_ID, generated).apply()
             return generated
         }
@@ -39,6 +51,15 @@ class AppPrefs(context: Context) {
         get() = prefs.getBoolean(KEY_USE_FRONT_CAMERA, true)
         set(value) = prefs.edit().putBoolean(KEY_USE_FRONT_CAMERA, value).apply()
 
+    /**
+     * UUID の最初の 12 桁を使って AA:BB:CC:DD:EE:FF 形式の擬似 MAC を生成。
+     * 端末再インストール後も同一とは限らない（device_id は SharedPreferences に保存される）。
+     */
+    private fun generatePseudoMac(): String {
+        val hex = UUID.randomUUID().toString().replace("-", "").uppercase().take(12)
+        return hex.chunked(2).joinToString(":")
+    }
+
     companion object {
         const val KEY_SEND_TO_SERVER = "send_to_server"
         const val KEY_SERVER_ENDPOINT = "server_endpoint"
@@ -46,7 +67,11 @@ class AppPrefs(context: Context) {
         const val KEY_SEND_INTERVAL = "send_interval_sec"
         const val KEY_USE_FRONT_CAMERA = "use_front_camera"
 
-        // プロジェクト指定のサーバー（会議室予約アプリ）
-        const val DEFAULT_ENDPOINT = "https://bright-amendments-employer-notebooks.trycloudflare.com/api/occupancy"
+        // プロジェクト指定の会議室予約システム エンドポイント
+        // POST /ingest/headcount に { device_id, headcount, confidence } を送信
+        const val DEFAULT_ENDPOINT = "https://supported-eligibility-rogers-warranty.trycloudflare.com/ingest/headcount"
+
+        // 旧エンドポイント（自動移行用）
+        const val LEGACY_ENDPOINT = "https://dui-pond-expand-amended.trycloudflare.com/ingest/headcount"
     }
 }

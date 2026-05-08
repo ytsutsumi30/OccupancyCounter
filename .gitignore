@@ -10,3 +10,6 @@
 local.properties
 /app/build
 /app/release
+
+release.jks
+local.properties

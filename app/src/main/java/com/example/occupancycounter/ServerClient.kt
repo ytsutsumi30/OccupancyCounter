@@ -11,23 +11,29 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONObject
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 /**
- * Cloudflare 経由の会議室予約アプリへ滞在人数を送信する。
- * POST {endpoint}
+ * 会議室予約システム (Cloudflare Tunnel 経由) へ滞在人数を送信する。
+ *
+ * POST /ingest/headcount
  *   Content-Type: application/json
  *   {
- *     "device_id": "android-xxx",
- *     "count": 3,
- *     "timestamp": "2026-05-02T10:23:45Z"
+ *     "device_id":  "AA:BB:CC:DD:EE:FF",
+ *     "headcount":  5,
+ *     "confidence": "confirmed"   // "confirmed" | "tentative"
  *   }
+ *
+ * confidence の意味:
+ *   - confirmed: スムージングウィンドウ内の検出値が安定している（推奨）
+ *   - tentative: 検出値が変動中（参考値）
  */
-class ServerClient(private val context: Context) {
+class ServerClient(@Suppress("unused") private val context: Context) {
+
+    enum class Confidence(val label: String) {
+        CONFIRMED("confirmed"),
+        TENTATIVE("tentative")
+    }
 
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)
@@ -35,10 +41,11 @@ class ServerClient(private val context: Context) {
         .writeTimeout(5, TimeUnit.SECONDS)
         .build()
 
-    fun postCount(
+    fun postHeadcount(
         endpoint: String,
         deviceId: String,
-        count: Int,
+        headcount: Int,
+        confidence: Confidence = Confidence.CONFIRMED,
         onResult: (success: Boolean, message: String?) -> Unit
     ) {
         if (endpoint.isBlank()) {
@@ -48,8 +55,8 @@ class ServerClient(private val context: Context) {
 
         val json = JSONObject().apply {
             put("device_id", deviceId)
-            put("count", count)
-            put("timestamp", isoNow())
+            put("headcount", headcount)
+            put("confidence", confidence.label)
         }.toString()
 
         val body = json.toRequestBody(JSON_MEDIA)
@@ -68,16 +75,11 @@ class ServerClient(private val context: Context) {
             override fun onResponse(call: Call, response: Response) {
                 response.use { resp ->
                     val ok = resp.isSuccessful
+                    Log.d(TAG, "POST $endpoint -> HTTP ${resp.code} (headcount=$headcount, conf=${confidence.label})")
                     onResult(ok, "HTTP ${resp.code}")
                 }
             }
         })
-    }
-
-    private fun isoNow(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        return sdf.format(Date())
     }
 
     companion object {

@@ -144,14 +144,28 @@ class MainActivity : AppCompatActivity() {
             if (changed && intervalElapsed) {
                 lastCount = stableCount
                 lastSentTime = now
-                serverClient?.postCount(
+
+                // confidence 判定:
+                //  - スムージングウィンドウが満杯 かつ 全フレームが同じ値 → confirmed
+                //  - それ以外（ウォームアップ中、変動中）                → tentative
+                val confidence = if (
+                    recentCounts.size >= smoothingWindow &&
+                    recentCounts.all { it == stableCount }
+                ) {
+                    ServerClient.Confidence.CONFIRMED
+                } else {
+                    ServerClient.Confidence.TENTATIVE
+                }
+
+                serverClient?.postHeadcount(
                     endpoint = prefs.serverEndpoint,
                     deviceId = prefs.deviceId,
-                    count = stableCount,
+                    headcount = stableCount,
+                    confidence = confidence,
                     onResult = { ok, msg ->
                         runOnUiThread {
                             binding.txtServer.text = if (ok) {
-                                getString(R.string.label_server_ok, msg ?: "")
+                                getString(R.string.label_server_ok, "${msg ?: ""}  [${confidence.label}]")
                             } else {
                                 getString(R.string.label_server_ng, msg ?: "")
                             }
