@@ -24,7 +24,7 @@
             app:title="@string/pref_endpoint_title"
             app:summary="@string/pref_endpoint_summary"
             app:dialogTitle="@string/pref_endpoint_title"
-            app:defaultValue="https://bright-amendments-employer-notebooks.trycloudflare.com/api/occupancy"
+            app:defaultValue="https://supported-eligibility-rogers-warranty.trycloudflare.com/ingest/headcount"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference
@@ -38,6 +38,27 @@
             app:title="@string/pref_interval_title"
             app:summary="@string/pref_interval_summary"
             app:defaultValue="10"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/cat_minutes">
+
+        <EditTextPreference
+            app:key="minutes_endpoint"
+            app:title="@string/pref_minutes_endpoint_title"
+            app:summary="@string/pref_minutes_endpoint_summary"
+            app:dialogTitle="@string/pref_minutes_endpoint_title"
+            app:defaultValue="https://your-tunnel.trycloudflare.com/ingest/recording"
+            app:useSimpleSummaryProvider="true" />
+
+        <DropDownPreference
+            app:key="last_room_id"
+            app:title="@string/pref_last_room_id_title"
+            app:summary="@string/pref_last_room_id_summary"
+            app:entries="@array/room_id_entries"
+            app:entryValues="@array/room_id_values"
+            app:defaultValue="medium"
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>

@@ -32,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private var serverClient: ServerClient? = null
     private var lastSentTime: Long = 0L
     private var lastCount: Int = -1
+    private lateinit var prefs: AppPrefs
+    private val clockFormatter = SimpleDateFormat("HH:mm:ss", Locale.JAPAN)
 
     // 連続検出した値の安定化用バッファ（チラつき防止）
     private val recentCounts = ArrayDeque<Int>()
@@ -58,9 +60,14 @@ class MainActivity : AppCompatActivity() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
         serverClient = ServerClient(applicationContext)
+        prefs = AppPrefs(this)
 
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        binding.btnMeetingRecord.setOnClickListener {
+            startActivity(Intent(this, com.example.occupancycounter.meeting.MeetingActivity::class.java))
         }
 
         binding.txtCount.text = "0"
@@ -99,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                     .also { it.setAnalyzer(cameraExecutor, faceAnalyzer!!) }
 
                 // カメラ向き（設定で前面/背面を切替可能に）
-                val useFrontCamera = AppPrefs(this).useFrontCamera
+                val useFrontCamera = prefs.useFrontCamera
                 val cameraSelector = if (useFrontCamera) {
                     CameraSelector.DEFAULT_FRONT_CAMERA
                 } else {
@@ -132,10 +139,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.txtCount.text = stableCount.toString()
         binding.txtRaw.text = getString(R.string.label_raw_count, rawCount)
-        binding.txtTime.text = SimpleDateFormat("HH:mm:ss", Locale.JAPAN).format(Date())
+        binding.txtTime.text = clockFormatter.format(Date())
 
         // サーバー送信（変化時のみ + 最低送信間隔を守る）
-        val prefs = AppPrefs(this)
         if (prefs.sendToServer) {
             val now = System.currentTimeMillis()
             val intervalMs = prefs.sendIntervalSec * 1000L

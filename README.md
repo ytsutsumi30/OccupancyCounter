@@ -11,11 +11,12 @@
 |------|------|
 | 開発環境 | Android Studio (Hedgehog 以降を推奨) / Kotlin |
 | 最小SDK | 24 (Android 7.0) |
-| ターゲットSDK | 34 (Android 14) |
-| カメラ取得 | CameraX 1.3.1 |
+| ターゲットSDK | 36 (Android 16) |
+| カメラ取得 | CameraX 1.4.2 |
 | 検出方式 | **ML Kit Face Detection (オフライン動作)** |
 | カウント方式 | スナップショット型（カメラに映っている顔の数 = 現在の滞在人数） |
 | サーバー連携 | OkHttp による JSON POST（設定でON/OFF切替） |
+| 主要依存 | ML Kit Face Detection 16.1.7 / OkHttp 4.12.0 |
 | 出力 | `.apk`（debug / release） |
 
 ---
@@ -94,7 +95,7 @@ OccupancyCounter/
 |------|------|
 | フロントカメラを使用 | OFF にすると背面カメラを使用。デフォルト ON |
 | サーバーへ送信する | ON でカウント値をサーバーへ POST。デフォルト OFF |
-| エンドポイントURL | 送信先URL。デフォルト: `https://bright-amendments-employer-notebooks.trycloudflare.com/api/occupancy` |
+| エンドポイントURL | 送信先URL。デフォルト: `https://supported-eligibility-rogers-warranty.trycloudflare.com/ingest/headcount` |
 | デバイスID | 初回起動時に自動生成。会議室名などに変更可能 |
 | 送信間隔(秒) | 連続送信を抑制する最小間隔。デフォルト 10 秒 |
 
@@ -105,7 +106,7 @@ OccupancyCounter/
 カウント値が **変化したとき** かつ **送信間隔が経過したとき** にのみ送信されます。
 
 ```http
-POST https://bright-amendments-employer-notebooks.trycloudflare.com/ingest/headcount
+POST https://supported-eligibility-rogers-warranty.trycloudflare.com/ingest/headcount
 Content-Type: application/json
 
 {
@@ -170,7 +171,7 @@ Content-Type: application/json
 - [ ] カメラに自分が映ると `1` と表示される。
 - [ ] 顔を画面外に外すと `0` に戻る。
 - [ ] 設定画面 → 「サーバーへ送信する」を ON にし、`adb logcat -s ServerClient` で送信ログを確認。
-- [ ] サーバー側 (`/api/occupancy`) でPOSTを受信できることを確認。
+- [ ] サーバー側 (`/ingest/headcount`) でPOSTを受信できることを確認。
 
 ---
 

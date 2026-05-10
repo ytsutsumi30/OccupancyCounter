@@ -23,13 +23,12 @@ class AppPrefs(context: Context) {
 
     var serverEndpoint: String
         get() {
-            val stored = prefs.getString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT) ?: DEFAULT_ENDPOINT
-            // 古いCloudflare Tunnel URLが保存されていたら新URLに自動移行
-            if (stored == LEGACY_ENDPOINT) {
-                prefs.edit().putString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT).apply()
-                return DEFAULT_ENDPOINT
+            val stored = prefs.getString(KEY_SERVER_ENDPOINT, DEFAULT_ENDPOINT)
+            val resolved = resolveServerEndpoint(stored)
+            if (resolved != stored) {
+                prefs.edit().putString(KEY_SERVER_ENDPOINT, resolved).apply()
             }
-            return stored
+            return resolved
         }
         set(value) = prefs.edit().putString(KEY_SERVER_ENDPOINT, value).apply()
 
@@ -44,12 +43,29 @@ class AppPrefs(context: Context) {
         set(value) = prefs.edit().putString(KEY_DEVICE_ID, value).apply()
 
     var sendIntervalSec: Int
-        get() = prefs.getString(KEY_SEND_INTERVAL, "10")?.toIntOrNull() ?: 10
+        get() = parseSendIntervalSec(prefs.getString(KEY_SEND_INTERVAL, "10"))
         set(value) = prefs.edit().putString(KEY_SEND_INTERVAL, value.toString()).apply()
 
     var useFrontCamera: Boolean
         get() = prefs.getBoolean(KEY_USE_FRONT_CAMERA, true)
         set(value) = prefs.edit().putBoolean(KEY_USE_FRONT_CAMERA, value).apply()
+
+    /**
+     * 議事録録音アップロード先 (POST /ingest/recording を期待)
+     * 例: https://xxx.trycloudflare.com/ingest/recording
+     * 空文字なら未設定 (UI で警告表示)
+     */
+    var minutesEndpoint: String
+        get() = prefs.getString(KEY_MINUTES_ENDPOINT, DEFAULT_MINUTES_ENDPOINT) ?: DEFAULT_MINUTES_ENDPOINT
+        set(value) = prefs.edit().putString(KEY_MINUTES_ENDPOINT, value).apply()
+
+    /**
+     * 議事録対象の会議室ID（large/medium/small/booth など）
+     * deviceId のマッピングと併用するための補助情報
+     */
+    var lastRoomId: String?
+        get() = prefs.getString(KEY_LAST_ROOM_ID, null)
+        set(value) = prefs.edit().putString(KEY_LAST_ROOM_ID, value).apply()
 
     /**
      * UUID の最初の 12 桁を使って AA:BB:CC:DD:EE:FF 形式の擬似 MAC を生成。
@@ -66,6 +82,10 @@ class AppPrefs(context: Context) {
         const val KEY_DEVICE_ID = "device_id"
         const val KEY_SEND_INTERVAL = "send_interval_sec"
         const val KEY_USE_FRONT_CAMERA = "use_front_camera"
+        const val KEY_MINUTES_ENDPOINT = "minutes_endpoint"
+        const val KEY_LAST_ROOM_ID = "last_room_id"
+
+        const val DEFAULT_MINUTES_ENDPOINT = "https://your-tunnel.trycloudflare.com/ingest/recording"
 
         // プロジェクト指定の会議室予約システム エンドポイント
         // POST /ingest/headcount に { device_id, headcount, confidence } を送信
@@ -73,5 +93,20 @@ class AppPrefs(context: Context) {
 
         // 旧エンドポイント（自動移行用）
         const val LEGACY_ENDPOINT = "https://dui-pond-expand-amended.trycloudflare.com/ingest/headcount"
+        const val LEGACY_ENDPOINT_API_OCCUPANCY = "https://bright-amendments-employer-notebooks.trycloudflare.com/api/occupancy"
+
+        private val LEGACY_ENDPOINTS = setOf(
+            LEGACY_ENDPOINT,
+            LEGACY_ENDPOINT_API_OCCUPANCY
+        )
+
+        internal fun parseSendIntervalSec(raw: String?): Int {
+            return raw?.toIntOrNull() ?: 10
+        }
+
+        internal fun resolveServerEndpoint(stored: String?): String {
+            val candidate = stored ?: DEFAULT_ENDPOINT
+            return if (candidate in LEGACY_ENDPOINTS) DEFAULT_ENDPOINT else candidate
+        }
     }
 }
