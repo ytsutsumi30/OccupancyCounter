@@ -31,4 +31,37 @@
 
     <string name="pref_interval_title">Send interval (seconds)</string>
     <string name="pref_interval_summary">Minimum interval between two sends.</string>
+
+    <!-- Meeting recorder -->
+    <string name="title_meeting_recorder">Meeting Recorder</string>
+    <string name="btn_open_meeting">Open Meeting Recorder</string>
+    <string name="label_meeting_title">Meeting title</string>
+    <string name="placeholder_meeting_title">Untitled meeting</string>
+    <string name="btn_start_recording">● Start Recording</string>
+    <string name="btn_stop_recording">■ Stop and Upload</string>
+
+    <string name="status_idle">Idle</string>
+    <string name="status_preparing">Preparing...</string>
+    <string name="status_recording">Recording</string>
+    <string name="status_error_simple">Error</string>
+
+    <string name="consent_title">Recording consent</string>
+    <string name="consent_message">This meeting will be recorded and uploaded for automatic transcription. Do you agree?</string>
+    <string name="consent_agree">Agree and start</string>
+    <string name="consent_disagree">Cancel</string>
+
+    <string name="msg_record_permission_required">Microphone permission is required.</string>
+    <string name="msg_rec_start_failed">Failed to start: %1$s</string>
+    <string name="msg_rec_stop_failed">Failed to stop: %1$s</string>
+    <string name="msg_endpoint_not_set">Minutes endpoint not configured. Set it in Settings.</string>
+    <string name="msg_uploading">Uploading...</string>
+    <string name="msg_upload_success">✓ Uploaded (job_id: %1$s)</string>
+    <string name="msg_upload_failed">✗ Upload failed: %1$s</string>
+    <string name="note_meeting_footer">Recording is independent from camera. The audio is uploaded automatically when stopped.</string>
+
+    <string name="cat_minutes">Meeting Minutes</string>
+    <string name="pref_minutes_endpoint_title">Minutes endpoint URL</string>
+    <string name="pref_minutes_endpoint_summary">multipart POST target for recordings (e.g. https://xxx.trycloudflare.com/ingest/recording)</string>
+    <string name="pref_last_room_id_title">Target room ID</string>
+    <string name="pref_last_room_id_summary">large / medium / small / booth</string>
 </resources>

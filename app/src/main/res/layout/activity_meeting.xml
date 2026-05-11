@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".meeting.MeetingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_meeting_title"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/editMeetingTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/placeholder_meeting_title"
+            android:inputType="text"
+            android:autofillHints="name"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- ステータスカード -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="#221A2E48"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:id="@+id/txtRecStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_idle"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtElapsed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="00:00"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:textColor="@color/teal_200" />
+
+            <TextView
+                android:id="@+id/txtSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text=""
+                android:textSize="12sp"
+                android:textColor="#BBFFFFFF" />
+        </LinearLayout>
+
+        <!-- 録音ボタン -->
+        <Button
+            android:id="@+id/btnStartRecording"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_start_recording"
+            android:layout_marginBottom="10dp"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnStopRecording"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="@string/btn_stop_recording"
+            android:textSize="16sp" />
+
+        <!-- アップロード結果 -->
+        <ProgressBar
+            android:id="@+id/progressUpload"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:id="@+id/txtUploadResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text=""
+            android:textSize="13sp" />
+
+        <!-- フッター注記 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/note_meeting_footer"
+            android:textSize="11sp"
+            android:textColor="#88FFFFFF" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="room_id_entries">
+        <item>大会議室 (Large)</item>
+        <item>中会議室 (Medium)</item>
+        <item>小会議室 (Small)</item>
+        <item>個別ブース (Booth)</item>
+    </string-array>
+
+    <string-array name="room_id_values">
+        <item>large</item>
+        <item>medium</item>
+        <item>small</item>
+        <item>booth</item>
+    </string-array>
+</resources>

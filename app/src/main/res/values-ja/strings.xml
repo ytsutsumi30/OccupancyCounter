@@ -31,4 +31,38 @@
 
     <string name="pref_interval_title">送信間隔(秒)</string>
     <string name="pref_interval_summary">連続送信を抑制する最小間隔です。</string>
+
+    <!-- 議事録録音 -->
+    <string name="title_meeting_recorder">議事録録音</string>
+    <string name="btn_open_meeting">議事録録音を開く</string>
+    <string name="label_meeting_title">会議名</string>
+    <string name="placeholder_meeting_title">無題の会議</string>
+    <string name="btn_start_recording">● 録音開始</string>
+    <string name="btn_stop_recording">■ 終了して送信</string>
+
+    <string name="status_idle">待機中</string>
+    <string name="status_preparing">録音準備中...</string>
+    <string name="status_recording">録音中</string>
+    <string name="status_error_simple">エラー</string>
+
+    <string name="consent_title">録音の同意</string>
+    <string name="consent_message">この会議を録音し、自動文字起こし・議事録生成に使用します。録音された音声はサーバーへ送信されます。同意しますか？</string>
+    <string name="consent_agree">同意して録音開始</string>
+    <string name="consent_disagree">キャンセル</string>
+
+    <string name="msg_record_permission_required">マイク権限が必要です。</string>
+    <string name="msg_rec_start_failed">録音開始失敗: %1$s</string>
+    <string name="msg_rec_stop_failed">録音停止失敗: %1$s</string>
+    <string name="msg_endpoint_not_set">議事録アップロード先が設定されていません。設定画面で「議事録エンドポイント」を入力してください。</string>
+    <string name="msg_uploading">送信中...</string>
+    <string name="msg_upload_success">✓ 送信成功 (job_id: %1$s)</string>
+    <string name="msg_upload_failed">✗ 送信失敗: %1$s</string>
+    <string name="note_meeting_footer">録音はカメラ機能と独立しています。終了ボタンで自動送信されます。送信失敗時はファイルが保持されます。</string>
+
+    <!-- 議事録 設定項目 -->
+    <string name="cat_minutes">議事録</string>
+    <string name="pref_minutes_endpoint_title">議事録エンドポイントURL</string>
+    <string name="pref_minutes_endpoint_summary">録音を multipart POST する先 (例: https://xxx.trycloudflare.com/ingest/recording)</string>
+    <string name="pref_last_room_id_title">対象会議室ID</string>
+    <string name="pref_last_room_id_summary">large / medium / small / booth など</string>
 </resources>
