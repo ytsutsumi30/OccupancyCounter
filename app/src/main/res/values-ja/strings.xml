@@ -57,6 +57,11 @@
     <string name="msg_uploading">送信中...</string>
     <string name="msg_upload_success">✓ 送信成功 (job_id: %1$s)</string>
     <string name="msg_upload_failed">✗ 送信失敗: %1$s</string>
+    <string name="btn_retry_pending">未送信録音を再送</string>
+    <string name="msg_no_pending_uploads">未送信の録音はありません。</string>
+    <string name="msg_pending_uploads">未送信録音: %1$d件 / 次: %2$s</string>
+    <string name="msg_retry_no_file">音声ファイルが見つかりません: %1$s</string>
+    <string name="msg_retry_started">再送中: %1$s</string>
     <string name="note_meeting_footer">録音はカメラ機能と独立しています。終了ボタンで自動送信されます。送信失敗時はファイルが保持されます。</string>
 
     <!-- 議事録 設定項目 -->

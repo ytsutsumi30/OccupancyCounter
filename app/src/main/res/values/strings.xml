@@ -57,6 +57,11 @@
     <string name="msg_uploading">Uploading...</string>
     <string name="msg_upload_success">✓ Uploaded (job_id: %1$s)</string>
     <string name="msg_upload_failed">✗ Upload failed: %1$s</string>
+    <string name="btn_retry_pending">Retry pending upload</string>
+    <string name="msg_no_pending_uploads">No pending recordings.</string>
+    <string name="msg_pending_uploads">Pending recordings: %1$d. Next: %2$s</string>
+    <string name="msg_retry_no_file">Audio file is missing: %1$s</string>
+    <string name="msg_retry_started">Retrying upload: %1$s</string>
     <string name="note_meeting_footer">Recording is independent from camera. The audio is uploaded automatically when stopped.</string>
 
     <string name="cat_minutes">Meeting Minutes</string>

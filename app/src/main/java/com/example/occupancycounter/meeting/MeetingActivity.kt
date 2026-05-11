@@ -44,8 +44,10 @@ class MeetingActivity : AppCompatActivity() {
     private lateinit var txtElapsed: TextView
     private lateinit var txtSize: TextView
     private lateinit var txtUploadResult: TextView
+    private lateinit var txtPendingJobs: TextView
     private lateinit var progress: ProgressBar
     private lateinit var editTitle: EditText
+    private lateinit var btnRetryPending: Button
 
     private val handler = Handler(Looper.getMainLooper())
     private val tickRunnable = object : Runnable {
@@ -83,13 +85,16 @@ class MeetingActivity : AppCompatActivity() {
         txtElapsed       = findViewById(R.id.txtElapsed)
         txtSize          = findViewById(R.id.txtSize)
         txtUploadResult  = findViewById(R.id.txtUploadResult)
+        txtPendingJobs   = findViewById(R.id.txtPendingJobs)
         progress         = findViewById(R.id.progressUpload)
+        btnRetryPending  = findViewById(R.id.btnRetryPending)
 
         editTitle.setText(getString(R.string.placeholder_meeting_title))
         btnStop.isEnabled = false
 
         btnStart.setOnClickListener { onStartClicked() }
         btnStop.setOnClickListener { onStopClicked() }
+        btnRetryPending.setOnClickListener { retryLatestPendingUpload() }
 
         updateUiForState()
     }
@@ -163,15 +168,6 @@ class MeetingActivity : AppCompatActivity() {
     }
 
     private fun uploadRecording(file: File) {
-        val endpoint = prefs.minutesEndpoint
-        if (endpoint.isBlank()) {
-            Toast.makeText(this, R.string.msg_endpoint_not_set, Toast.LENGTH_LONG).show()
-            return
-        }
-
-        progress.visibility = View.VISIBLE
-        txtUploadResult.text = getString(R.string.msg_uploading)
-
         val meta = RecordingUploader.UploadMeta(
             deviceId          = prefs.deviceId,
             roomId            = prefs.lastRoomId,
@@ -182,8 +178,51 @@ class MeetingActivity : AppCompatActivity() {
             jobId             = recorder.jobId
         )
 
-        // ── ジョブ状態を UPLOADING に更新 ──
-        jobStore.markUploading(recorder.jobId)
+        uploadWithMeta(file, meta, deleteOnSuccess = true)
+    }
+
+    private fun retryLatestPendingUpload() {
+        val record = pendingUploadJobs().firstOrNull() ?: return
+        val audioPath = record.audioPath
+        val file = audioPath?.let { File(it) }
+        if (file == null || !file.exists() || file.length() <= 0) {
+            jobStore.markFailed(
+                jobId        = record.jobId,
+                errorMessage = getString(R.string.msg_retry_no_file, audioPath ?: "-"),
+                httpCode     = null
+            )
+            updateUiForState()
+            return
+        }
+
+        txtUploadResult.text = getString(R.string.msg_retry_started, record.title)
+        val meta = RecordingUploader.UploadMeta(
+            deviceId           = record.deviceId,
+            roomId             = record.roomId,
+            title              = record.title,
+            startedAt          = record.startedAtMs,
+            endedAt            = record.endedAtMs,
+            attendeesEstimated = record.attendeesEstimated,
+            language           = record.language,
+            jobId              = record.jobId
+        )
+        uploadWithMeta(file, meta, deleteOnSuccess = true)
+    }
+
+    private fun uploadWithMeta(
+        file: File,
+        meta: RecordingUploader.UploadMeta,
+        deleteOnSuccess: Boolean
+    ) {
+        val endpoint = prefs.minutesEndpoint
+        if (endpoint.isBlank()) {
+            Toast.makeText(this, R.string.msg_endpoint_not_set, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        progress.visibility = View.VISIBLE
+        txtUploadResult.text = getString(R.string.msg_uploading)
+        jobStore.markUploading(meta.jobId)
 
         // OkHttp の callback は worker thread で呼ばれるが、UI更新は runOnUiThread で
         thread(name = "uploader") {
@@ -199,8 +238,9 @@ class MeetingActivity : AppCompatActivity() {
                                 serverJobId = result.jobId,
                                 httpCode    = result.httpCode
                             )
-                            // アップロード成功 → 一時ファイル削除
-                            recorder.cleanup()
+                            if (deleteOnSuccess) {
+                                if (file == recorder.outputFile) recorder.cleanup() else file.delete()
+                            }
                         }
                         is RecordingUploader.Result.Failure -> {
                             txtUploadResult.text = getString(R.string.msg_upload_failed, result.errorMessage)
@@ -252,6 +292,23 @@ class MeetingActivity : AppCompatActivity() {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             btnStop.alpha = if (btnStop.isEnabled) 1.0f else 0.5f
+        }
+        updatePendingJobsUi()
+    }
+
+    private fun updatePendingJobsUi() {
+        val pending = pendingUploadJobs()
+        btnRetryPending.isEnabled = pending.isNotEmpty() && recorder.state != MeetingRecorder.State.RECORDING
+        txtPendingJobs.text = if (pending.isEmpty()) {
+            getString(R.string.msg_no_pending_uploads)
+        } else {
+            getString(R.string.msg_pending_uploads, pending.size, pending.first().title)
+        }
+    }
+
+    private fun pendingUploadJobs(): List<JobStore.JobRecord> {
+        return jobStore.loadAll().filter { record ->
+            record.status == JobStore.JobStatus.PENDING || record.status == JobStore.JobStatus.FAILED
         }
     }
 }
