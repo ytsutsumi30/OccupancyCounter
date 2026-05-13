@@ -238,3 +238,141 @@ body {
 .btn-demo   { background: rgba(124,58,237,0.2); color: var(--purple); border-color: var(--purple); }
 .btn-reset  { background: rgba(77,140,255,0.2); color: var(--blue); border-color: var(--blue); }
 .btn-apply  { background: var(--green); color: #062a17; border-color: var(--green); font-weight: 600; }
+
+/* ============================================================
+   W7: 議事録バッジ + モーダル
+============================================================ */
+
+/* 各会議室カードのフッターに置く議事録バッジ */
+.room-minutes {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s;
+  padding: 6px 4px;
+  border-radius: 4px;
+}
+.room-minutes:hover { background: rgba(77,140,255,0.10); }
+.room-minutes.disabled { cursor: default; opacity: 0.4; }
+.room-minutes.disabled:hover { background: transparent; }
+
+.room-minutes .badge-icon { font-size: 13px; }
+.room-minutes .badge-count {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 13px;
+}
+.room-minutes .badge-arrow { color: var(--muted); font-size: 10px; }
+
+/* 議事録モーダル */
+.minutes-card {
+  max-width: 720px;
+  width: 92%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.minutes-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.minutes-head h3 { margin: 0; font-size: 16px; }
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 8px;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+
+.minutes-list { overflow-y: auto; max-height: 60vh; }
+.minutes-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 30px 10px;
+  font-size: 13px;
+}
+
+.minutes-item {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.minutes-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.minutes-item-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.minutes-item-status {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.status-completed   { background: rgba(54,224,140,0.15); color: var(--green); }
+.status-processing  { background: rgba(245,166,35,0.15); color: var(--orange); }
+.status-failed      { background: rgba(239,77,77,0.15);  color: var(--red); }
+
+.minutes-item-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.minutes-item-meta .mocked-tag {
+  background: rgba(181,140,255,0.15);
+  color: var(--purple);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+.minutes-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.minutes-item-actions a {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  transition: background-color 0.15s;
+}
+.minutes-action-muted {
+  color: var(--muted);
+  font-size: 11px;
+  padding: 5px 0;
+}
+.btn-action-docx    { color: var(--blue);   border-color: var(--blue); }
+.btn-action-docx:hover    { background: rgba(77,140,255,0.15); }
+.btn-action-onedrive{ color: var(--green);  border-color: var(--green); }
+.btn-action-onedrive:hover{ background: rgba(54,224,140,0.15); }
+.btn-action-markdown{ color: var(--purple); border-color: var(--purple); }
+.btn-action-markdown:hover{ background: rgba(181,140,255,0.15); }

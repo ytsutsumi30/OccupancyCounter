@@ -23,6 +23,10 @@ let lastEntryCount = 0;
 let connFailures = 0;
 let demoMode = false;
 let demoState = createInitialDemoState();
+let lastDashboardData = null;
+let minutesJobs = [];
+let minutesByRoom = {};
+let selectedMinutesRoomId = null;
 
 // ─── API ベースURL の決定 ───────────────────────────────────
 function getApiBase() {
@@ -90,6 +94,33 @@ async function poll() {
   }
 }
 
+async function pollMinutesJobs() {
+  if (demoMode) {
+    updateMinutesJobs(createDemoMinutesJobs());
+    return;
+  }
+
+  try {
+    const res = await fetch(getApiBase() + "/api/jobs", { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    updateMinutesJobs(Array.isArray(data.jobs) ? data.jobs : []);
+  } catch (e) {
+    console.warn("minutes jobs poll failed", e.message);
+    updateMinutesJobs([]);
+  }
+}
+
+function updateMinutesJobs(jobs) {
+  minutesJobs = jobs
+    .map(normalizeMinutesJob)
+    .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  minutesByRoom = groupMinutesByRoom(minutesJobs);
+
+  if (lastDashboardData) render(lastDashboardData);
+  if (selectedMinutesRoomId) renderMinutesModal(selectedMinutesRoomId);
+}
+
 // ─── Demo Mode ───────────────────────────────────────────
 function createInitialDemoState() {
   const rooms = ROOM_META.map(m => ({
@@ -130,6 +161,7 @@ function useDemoMode() {
 
 // ─── Render ──────────────────────────────────────────────
 function render(data) {
+  lastDashboardData = data;
   const vacant = data.rooms.filter(r => r.headcount === 0).length;
   document.getElementById("availableNum").textContent = vacant;
   document.getElementById("vacancyText").textContent = vacant + "室空き";
@@ -199,6 +231,19 @@ function roomCardHtml(r) {
   const conf = r.confidence === "tentative"
     ? '<span class="badge tentative" style="margin-left:6px">tentative</span>' : "";
   const next = r.nextLabel ? `<div class="next-line"><span class="arrow">▸</span>次▸ ${r.nextLabel}</div>` : "";
+  const roomMinutes = minutesByRoom[r.id] || [];
+  const completedCount = roomMinutes.filter(job => job.status === "completed").length;
+  const inProgressCount = roomMinutes.filter(job => isProcessingStatus(job.status)).length;
+  const failedCount = roomMinutes.filter(job => job.status === "failed").length;
+  const totalCount = roomMinutes.length;
+  const minutesClass = totalCount > 0 ? "room-minutes" : "room-minutes disabled";
+  const minutesText = totalCount > 0
+    ? `議事録 ${completedCount}/${totalCount}件`
+    : "議事録 0件";
+  const minutesSub = inProgressCount > 0
+    ? `生成中 ${inProgressCount}`
+    : failedCount > 0 ? `失敗 ${failedCount}` : "一覧";
+  const minutesClick = totalCount > 0 ? ` onclick="openMinutesModal('${escapeAttr(r.id)}')"` : "";
 
   return `
     <div class="room ${cls} ${live}">
@@ -213,7 +258,177 @@ function roomCardHtml(r) {
         <span class="n">${r.headcount}</span><span class="of">/ ${r.capacity}</span>
       </div>
       ${next}
+      <div class="${minutesClass}"${minutesClick}>
+        <span><span class="badge-icon">📄</span> <span class="badge-count">${minutesText}</span></span>
+        <span class="badge-arrow">${minutesSub} ›</span>
+      </div>
     </div>`;
+}
+
+function normalizeMinutesJob(job) {
+  const roomId = job.roomId || job.room_id || job.meta?.room_id || "unknown";
+  const createdAt = job.createdAt || job.completedAt || "";
+  return {
+    jobId: job.jobId || job.job_id,
+    status: String(job.status || "unknown").toLowerCase(),
+    createdAt,
+    title: job.title || job.meta?.title || "無題の会議",
+    roomId,
+    deviceId: job.deviceId || job.device_id || job.meta?.device_id || "",
+    speakerCount: job.speakerCount ?? job.transcript?.speakerCount ?? null,
+    mocked: !!job.mocked,
+    error: job.error || "",
+    onedriveUrl: job.onedriveUrl || job.minutes?.onedrive?.shareUrl || job.minutes?.onedrive?.webUrl || "",
+  };
+}
+
+function groupMinutesByRoom(jobs) {
+  return jobs.reduce((acc, job) => {
+    const roomId = job.roomId || "unknown";
+    if (!acc[roomId]) acc[roomId] = [];
+    acc[roomId].push(job);
+    return acc;
+  }, {});
+}
+
+function createDemoMinutesJobs() {
+  const now = Date.now();
+  return [
+    {
+      jobId: "demo-minutes-medium-001",
+      status: "completed",
+      roomId: "medium",
+      title: "PSUユニット会議",
+      createdAt: new Date(now - 18 * 60 * 1000).toISOString(),
+      speakerCount: 3,
+      mocked: true
+    },
+    {
+      jobId: "demo-minutes-large-001",
+      status: "summarizing",
+      roomId: "large",
+      title: "人事MT",
+      createdAt: new Date(now - 8 * 60 * 1000).toISOString(),
+      speakerCount: 2,
+      mocked: true
+    },
+    {
+      jobId: "demo-minutes-small-001",
+      status: "completed",
+      roomId: "small",
+      title: "作業報告",
+      createdAt: new Date(now - 55 * 60 * 1000).toISOString(),
+      speakerCount: 1,
+      mocked: true
+    }
+  ];
+}
+
+function openMinutesModal(roomId) {
+  selectedMinutesRoomId = roomId;
+  renderMinutesModal(roomId);
+  document.getElementById("minutesModal").classList.remove("hidden");
+}
+
+function closeMinutesModal() {
+  selectedMinutesRoomId = null;
+  document.getElementById("minutesModal").classList.add("hidden");
+}
+
+function onMinutesModalBgClick(event) {
+  if (event.target && event.target.id === "minutesModal") closeMinutesModal();
+}
+
+function renderMinutesModal(roomId) {
+  const room = ROOM_META.find(r => r.id === roomId);
+  const jobs = minutesByRoom[roomId] || [];
+  document.getElementById("minutesModalTitle").textContent =
+    `${room ? room.name : roomId} - 議事録一覧`;
+
+  const list = document.getElementById("minutesList");
+  if (!jobs.length) {
+    list.innerHTML = '<div class="minutes-empty">この会議室の議事録はまだありません。</div>';
+    return;
+  }
+
+  list.innerHTML = jobs.map(minutesItemHtml).join("");
+}
+
+function minutesItemHtml(job) {
+  const statusClass = statusClassName(job.status);
+  const statusLabel = statusLabelText(job.status);
+  const created = formatDateTime(job.createdAt);
+  const apiBase = getApiBase();
+  const docxUrl = demoMode ? "#" : `${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/download`;
+  const markdownUrl = demoMode ? "#" : `${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/markdown`;
+  const disabledClick = demoMode ? ' onclick="return false;"' : "";
+  const actionLinks = job.status === "completed"
+    ? `
+      <a class="btn-action-docx" href="${escapeAttr(docxUrl)}"${disabledClick}>DOCX</a>
+      <a class="btn-action-markdown" href="${escapeAttr(markdownUrl)}" target="_blank" rel="noopener"${disabledClick}>Markdown</a>
+      ${job.onedriveUrl ? `<a class="btn-action-onedrive" href="${escapeAttr(job.onedriveUrl)}" target="_blank" rel="noopener">OneDrive</a>` : ""}
+    `
+    : `<span class="minutes-action-muted">${escapeHtml(job.error || "生成完了後にダウンロードできます")}</span>`;
+
+  return `
+    <div class="minutes-item">
+      <div class="minutes-item-head">
+        <div class="minutes-item-title">${escapeHtml(job.title)}</div>
+        <span class="minutes-item-status ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="minutes-item-meta">
+        <span>${escapeHtml(created)}</span>
+        <span>Job: <code>${escapeHtml(job.jobId || "-")}</code></span>
+        ${job.speakerCount != null ? `<span>話者 ${escapeHtml(job.speakerCount)}名</span>` : ""}
+        ${job.mocked ? '<span class="mocked-tag">mock</span>' : ""}
+      </div>
+      <div class="minutes-item-actions">${actionLinks}</div>
+    </div>`;
+}
+
+function isProcessingStatus(status) {
+  return ["queued", "publishing", "transcribing", "identifying_speakers", "summarizing", "building_docx", "uploading_onedrive"].includes(status);
+}
+
+function statusClassName(status) {
+  if (status === "completed") return "status-completed";
+  if (status === "failed") return "status-failed";
+  return "status-processing";
+}
+
+function statusLabelText(status) {
+  const labels = {
+    queued: "待機中",
+    publishing: "公開中",
+    transcribing: "文字起こし中",
+    identifying_speakers: "話者識別中",
+    summarizing: "要約中",
+    building_docx: "DOCX生成中",
+    uploading_onedrive: "OneDrive保存中",
+    completed: "完了",
+    failed: "失敗"
+  };
+  return labels[status] || status || "不明";
+}
+
+function formatDateTime(value) {
+  if (!value) return "日時不明";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
 }
 
 function drawChart(data) {
@@ -323,4 +538,6 @@ async function resetState() {
 // ─── Init ────────────────────────────────────────────────
 updateApiBaseLabel();
 poll();
+pollMinutesJobs();
 setInterval(poll, window.DASHBOARD_CONFIG.POLL_INTERVAL_MS);
+setInterval(pollMinutesJobs, window.DASHBOARD_CONFIG.MINUTES_POLL_INTERVAL_MS || window.DASHBOARD_CONFIG.POLL_INTERVAL_MS);

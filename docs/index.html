@@ -115,6 +115,19 @@ POST <span id="ingestUrl">/ingest/headcount</span><br>
   </main>
 </div>
 
+<!-- ===== 議事録モーダル (W7) ===== -->
+<div id="minutesModal" class="dialog hidden" onclick="onMinutesModalBgClick(event)">
+  <div class="dialog-card minutes-card" onclick="event.stopPropagation()">
+    <div class="minutes-head">
+      <h3 id="minutesModalTitle">議事録一覧</h3>
+      <button class="modal-close" onclick="closeMinutesModal()">×</button>
+    </div>
+    <div id="minutesList" class="minutes-list">
+      <div class="minutes-empty">読込中...</div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Backend設定ダイアログ ===== -->
 <div id="backendDialog" class="dialog hidden">
   <div class="dialog-card">
