@@ -40,6 +40,13 @@
             app:defaultValue="10"
             app:useSimpleSummaryProvider="true" />
 
+        <EditTextPreference
+            app:key="server_api_key"
+            app:title="@string/pref_server_api_key_title"
+            app:summary="@string/pref_server_api_key_summary"
+            app:dialogTitle="@string/pref_server_api_key_title"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/cat_minutes">

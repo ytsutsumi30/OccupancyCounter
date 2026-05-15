@@ -28,7 +28,8 @@ import java.util.concurrent.TimeUnit
  *   - confirmed: スムージングウィンドウ内の検出値が安定している（推奨）
  *   - tentative: 検出値が変動中（参考値）
  */
-class ServerClient(@Suppress("unused") private val context: Context) {
+class ServerClient(context: Context) {
+    private val prefs = AppPrefs(context)
 
     enum class Confidence(val label: String) {
         CONFIRMED("confirmed"),
@@ -60,11 +61,13 @@ class ServerClient(@Suppress("unused") private val context: Context) {
         }.toString()
 
         val body = json.toRequestBody(JSON_MEDIA)
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
             .url(endpoint)
             .post(body)
             .addHeader("Content-Type", "application/json")
-            .build()
+        val apiKey = prefs.serverApiKey.trim()
+        if (apiKey.isNotEmpty()) requestBuilder.addHeader("X-API-Key", apiKey)
+        val request = requestBuilder.build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {

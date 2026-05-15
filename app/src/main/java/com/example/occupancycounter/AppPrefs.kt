@@ -46,6 +46,10 @@ class AppPrefs(context: Context) {
         get() = parseSendIntervalSec(prefs.getString(KEY_SEND_INTERVAL, "10"))
         set(value) = prefs.edit().putString(KEY_SEND_INTERVAL, value.toString()).apply()
 
+    var serverApiKey: String
+        get() = prefs.getString(KEY_SERVER_API_KEY, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SERVER_API_KEY, value).apply()
+
     var useFrontCamera: Boolean
         get() = prefs.getBoolean(KEY_USE_FRONT_CAMERA, true)
         set(value) = prefs.edit().putBoolean(KEY_USE_FRONT_CAMERA, value).apply()
@@ -81,6 +85,7 @@ class AppPrefs(context: Context) {
         const val KEY_SERVER_ENDPOINT = "server_endpoint"
         const val KEY_DEVICE_ID = "device_id"
         const val KEY_SEND_INTERVAL = "send_interval_sec"
+        const val KEY_SERVER_API_KEY = "server_api_key"
         const val KEY_USE_FRONT_CAMERA = "use_front_camera"
         const val KEY_MINUTES_ENDPOINT = "minutes_endpoint"
         const val KEY_LAST_ROOM_ID = "last_room_id"

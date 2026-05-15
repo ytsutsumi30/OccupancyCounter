@@ -27,6 +27,39 @@ let lastDashboardData = null;
 let minutesJobs = [];
 let minutesByRoom = {};
 let selectedMinutesRoomId = null;
+const API_KEY_STORAGE_KEY = "testdashboard_api_key";
+
+initializeApiKey();
+
+function initializeApiKey() {
+  const params = new URLSearchParams(location.search);
+  const apiKey = params.get("api_key") || params.get("apiKey");
+  if (apiKey) {
+    localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+    params.delete("api_key");
+    params.delete("apiKey");
+    history.replaceState({}, "", `${location.pathname}${params.toString() ? `?${params}` : ""}${location.hash}`);
+  }
+}
+
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE_KEY) || "";
+}
+
+function fetchWithApiKey(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  const apiKey = getApiKey();
+  if (apiKey) headers.set("X-API-Key", apiKey);
+  return fetch(url, { ...options, headers });
+}
+
+function urlWithApiKey(url) {
+  const apiKey = getApiKey();
+  if (!apiKey) return url;
+  const u = new URL(url, location.href);
+  u.searchParams.set("api_key", apiKey);
+  return u.toString();
+}
 
 // ─── API ベースURL の決定 ───────────────────────────────────
 function getApiBase() {
@@ -77,7 +110,7 @@ async function poll() {
 
   const apiBase = getApiBase();
   try {
-    const res = await fetch(apiBase + "/api/state", { cache: "no-store" });
+    const res = await fetchWithApiKey(apiBase + "/api/state", { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     connFailures = 0;
@@ -101,7 +134,7 @@ async function pollMinutesJobs() {
   }
 
   try {
-    const res = await fetch(getApiBase() + "/api/jobs", { cache: "no-store" });
+    const res = await fetchWithApiKey(getApiBase() + "/api/jobs", { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     updateMinutesJobs(Array.isArray(data.jobs) ? data.jobs : []);
@@ -359,8 +392,8 @@ function minutesItemHtml(job) {
   const statusLabel = statusLabelText(job.status);
   const created = formatDateTime(job.createdAt);
   const apiBase = getApiBase();
-  const docxUrl = demoMode ? "#" : `${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/download`;
-  const markdownUrl = demoMode ? "#" : `${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/markdown`;
+  const docxUrl = demoMode ? "#" : urlWithApiKey(`${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/download`);
+  const markdownUrl = demoMode ? "#" : urlWithApiKey(`${apiBase}/api/minutes/${encodeURIComponent(job.jobId)}/markdown`);
   const disabledClick = demoMode ? ' onclick="return false;"' : "";
   const actionLinks = job.status === "completed"
     ? `
@@ -499,6 +532,8 @@ function drawLog(data) {
 // ─── Dialog ──────────────────────────────────────────────
 function openBackendDialog() {
   document.getElementById("apiBaseInput").value = getApiBase();
+  const apiKeyInput = document.getElementById("apiKeyInput");
+  if (apiKeyInput) apiKeyInput.value = getApiKey();
   document.getElementById("backendDialog").classList.remove("hidden");
 }
 function closeBackendDialog() {
@@ -508,6 +543,12 @@ function applyBackend() {
   const v = document.getElementById("apiBaseInput").value.trim().replace(/\/$/, "");
   if (!v) return alert("URLを入力してください");
   setApiBase(v);
+  const apiKeyInput = document.getElementById("apiKeyInput");
+  if (apiKeyInput) {
+    const apiKey = apiKeyInput.value.trim();
+    if (apiKey) localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+    else localStorage.removeItem(API_KEY_STORAGE_KEY);
+  }
   demoMode = false;
   connFailures = 0;
   closeBackendDialog();
@@ -530,7 +571,7 @@ async function resetState() {
   }
   if (!confirm("すべての会議室の人数をリセットしますか？")) return;
   try {
-    await fetch(getApiBase() + "/api/state", { method: "DELETE" });
+    await fetchWithApiKey(getApiBase() + "/api/state", { method: "DELETE" });
   } catch (e) { /* ignore */ }
   poll();
 }

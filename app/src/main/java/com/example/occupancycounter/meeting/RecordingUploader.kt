@@ -2,6 +2,7 @@ package com.example.occupancycounter.meeting
 
 import android.content.Context
 import android.util.Log
+import com.example.occupancycounter.AppPrefs
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
@@ -37,7 +38,8 @@ import java.util.concurrent.TimeUnit
  *     Content-Type: audio/mp4
  *     <binary>
  */
-class RecordingUploader(@Suppress("unused") private val context: Context) {
+class RecordingUploader(context: Context) {
+    private val prefs = AppPrefs(context)
 
     data class UploadMeta(
         val deviceId: String,
@@ -100,10 +102,12 @@ class RecordingUploader(@Suppress("unused") private val context: Context) {
             )
             .build()
 
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
             .url(endpoint)
             .post(body)
-            .build()
+        val apiKey = prefs.serverApiKey.trim()
+        if (apiKey.isNotEmpty()) requestBuilder.addHeader("X-API-Key", apiKey)
+        val request = requestBuilder.build()
 
         Log.d(TAG, "Uploading: ${audioFile.name} (${audioFile.length()}B) → $endpoint")
 
