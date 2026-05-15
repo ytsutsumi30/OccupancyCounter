@@ -12,6 +12,7 @@ local.properties
 /app/release
 *.apk
 *.aab
+artifacts/
 
 release.jks
 local.properties

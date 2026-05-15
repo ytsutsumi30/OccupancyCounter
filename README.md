@@ -76,6 +76,22 @@ OccupancyCounter/
 
 * **Build → Generate Signed Bundle / APK** → APK を選択 → 署名キーを作成/指定 → release ビルド。
 
+### APK配布物の整理
+
+APK / AAB はGit管理対象外です。配布用成果物は次で `artifacts/android/v<version>/` にまとめます。
+
+```powershell
+.\scripts\package-release.ps1 -Build
+```
+
+既存APKを使う場合:
+
+```powershell
+.\scripts\package-release.ps1 -ApkPath .\app-release-v1.0-20260514.apk
+```
+
+GitHub Releasesへ登録する場合は `-GitHubRelease` を付けます。詳細は `docs/RELEASE.md` を参照してください。
+
 ---
 
 ## 2. アプリの動作
