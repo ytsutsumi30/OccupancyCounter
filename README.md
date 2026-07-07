@@ -25,32 +25,52 @@
 
 ```
 OccupancyCounter/
-├── build.gradle.kts                 ← Top-level Gradle
+├── CLAUDE.md                        ← Claude Code 用プロジェクトガイド
+├── build.gradle.kts                 ← Top-level Gradle (AGP 9.2.0 / Kotlin 2.2.10)
 ├── settings.gradle.kts
 ├── gradle.properties
 ├── gradle/wrapper/
-│   └── gradle-wrapper.properties    ← Gradle 8.5
+│   └── gradle-wrapper.properties    ← Gradle 9.4.1
+├── .claude/                         ← Claude Code 設定 (permissions / skills)
+├── .github/
+│   ├── workflows/ci.yml             ← CI (gradlew test + assembleDebug)
+│   └── pull_request_template.md
+├── docs/                            ← GitHub Pages ダッシュボード + RELEASE.md
+│   ├── index.html / dashboard.js / config.js / style.css
+│   └── RELEASE.md                   ← APKリリース手順
+├── scripts/
+│   └── package-release.ps1          ← リリースAPKパッケージング (Windows)
 └── app/
     ├── build.gradle.kts             ← 依存関係 (CameraX / ML Kit / OkHttp)
     ├── proguard-rules.pro
-    └── src/main/
-        ├── AndroidManifest.xml
-        ├── java/com/example/occupancycounter/
-        │   ├── MainActivity.kt      ← カメラ + UI + スムージング
-        │   ├── FaceAnalyzer.kt      ← ML Kit Face Detection ラッパー
-        │   ├── ServerClient.kt      ← OkHttp で JSON POST
-        │   ├── SettingsActivity.kt  ← 設定画面 (PreferenceFragment)
-        │   └── AppPrefs.kt          ← SharedPreferences ラッパー
-        └── res/
-            ├── layout/activity_main.xml
-            ├── layout/activity_settings.xml
-            ├── xml/preferences.xml
-            ├── values/strings.xml (英語)
-            ├── values-ja/strings.xml (日本語)
-            ├── values/colors.xml
-            ├── values/themes.xml
-            ├── drawable/ic_launcher_*.xml
-            └── mipmap-*/ic_launcher*.png
+    └── src/
+        ├── test/java/com/example/occupancycounter/
+        │   └── AppPrefsTest.kt      ← ユニットテスト
+        └── main/
+            ├── AndroidManifest.xml
+            ├── java/com/example/occupancycounter/
+            │   ├── MainActivity.kt      ← カメラ + UI + スムージング
+            │   ├── FaceAnalyzer.kt      ← ML Kit Face Detection ラッパー
+            │   ├── ServerClient.kt      ← OkHttp で JSON POST
+            │   ├── SettingsActivity.kt  ← 設定画面 (PreferenceFragment)
+            │   ├── AppPrefs.kt          ← SharedPreferences ラッパー
+            │   └── meeting/             ← 会議録音・議事録生成
+            │       ├── MeetingActivity.kt
+            │       ├── MeetingRecorder.kt
+            │       ├── RecordingUploader.kt
+            │       └── JobStore.kt
+            └── res/
+                ├── layout/activity_main.xml
+                ├── layout/activity_meeting.xml
+                ├── layout/activity_settings.xml
+                ├── xml/preferences.xml
+                ├── values/strings.xml (英語)
+                ├── values-ja/strings.xml (日本語)
+                ├── values/arrays.xml (会議室リスト)
+                ├── values/colors.xml
+                ├── values/themes.xml
+                ├── drawable/ic_launcher_*.xml
+                └── mipmap-*/ic_launcher*.png
 ```
 
 ---
